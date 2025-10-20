@@ -1,5 +1,8 @@
 install.packages("quid")
 library(quid)
+install.packages("microbenchmark")
+library(microbenchmark)
+
 data(stroop)
 resStroop <- constraintBF(formula = rtS ~ ID*cond,
                           data = stroop,
@@ -7,9 +10,29 @@ resStroop <- constraintBF(formula = rtS ~ ID*cond,
                           ID = "ID",
                           whichConstraint = c("cond" = "2 > 1"),
                           rscaleEffects = c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10))
+resStroop
+
 bfs<-resStroop@generalTestObj
 bfs[4]/bfs[3]
 bfs/max(bfs)
+
+# choose number of prior draws
+iterationsPrior <- 2000
+
+resStroop@totalThetas
+str(resStroop)
+??estimatePriorProbability
+
+
+# call the function (use package namespace if needed)
+prior_pass_vec <- estimatePriorProbability(
+  iTheta = resStroop@totalThetas,
+  rscaleEffects = resStroop@generalTestObj@numerator$`ID + cond + ID:cond`@prior$rscale,
+  iterationsPrior = iterationsPrior,
+  cleanConstraints = resStroop@constraints@cleanConstraints,
+  IDorg = "ID",
+  effectNameOrg = resStroop@designIndeces$indEffect
+)
 
 plotEffects(resStroop)
 plotEffects(resStroop, .raw = TRUE)

@@ -58,3 +58,4 @@ fixedFromRandomProjection <- function (nlevRandom, sparse = FALSE) {
   S = as.vector((eigen(centering)$vectors)[, 1:(nlevRandom - 1)])
   return(Matrix::Matrix(S, nrow = nlevRandom, sparse = sparse))
 }
+
