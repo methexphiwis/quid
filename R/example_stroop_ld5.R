@@ -22,17 +22,32 @@ iterationsPrior <- 2000
 resStroop@totalThetas
 str(resStroop)
 ??estimatePriorProbability
+print(length(resStroop@generalTestObj@numerator$ID@prior$rscale$effects))
+print(resStroop@generalTestObj@data$cond)
 
+# Prüfe iTheta / totalThetas
+str(resStroop@totalThetas)
+print(length(resStroop@totalThetas[["effectLevels"]]))
+print(names(resStroop@totalThetas))        # um zu sehen, welche Felder vorhanden sind
+
+# Prüfe effectNameOrg
+str(resStroop@designIndeces$indEffect)
+print(length(resStroop@designIndeces$indEffect))
+print(resStroop@designIndeces$indEffect)   # ist das "cond" oder ein Vektor?
+
+# Prüfe rscaleEffects und seine Namen
+rsc <- resStroop@generalTestObj@numerator$`ID + cond + ID:cond`@prior$rscale
+str(rsc)
+print(names(rsc)
 
 # call the function (use package namespace if needed)
 prior_pass_vec <- estimatePriorProbability(
-  iTheta = resStroop@totalThetas,
-  rscaleEffects = resStroop@generalTestObj@numerator$`ID + cond + ID:cond`@prior$rscale,
+  iTheta = resStroop@designIndeces$effectLevels,
+  rscaleEffects = resStroop@generalTestObj@numerator$`ID + cond + ID:cond`@prior$rscale$fixed,
   iterationsPrior = iterationsPrior,
   cleanConstraints = resStroop@constraints@cleanConstraints,
-  IDorg = "ID",
-  effectNameOrg = resStroop@designIndeces$indEffect
-)
+  IDorg = resStroop@generalTestObj@data$ID,
+  effectNameOrg = resStroop@generalTestObj@data$cond)
 
 plotEffects(resStroop)
 plotEffects(resStroop, .raw = TRUE)
