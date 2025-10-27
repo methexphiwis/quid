@@ -16,6 +16,23 @@ bfs<-resStroop@generalTestObj
 bfs[4]/bfs[3]
 bfs/max(bfs)
 
+plotEffects(resStroop)
+plotEffects(resStroop, .raw = TRUE)
+
+# call the function (use package namespace if needed)
+prior_pass_vec <- estimatePriorProbability(
+  iTheta = resStroop@designIndeces, #wird da gespeichert, findet funktion estimateConstrainedThetas nicht
+  rscaleEffects = resStroop@generalTestObj@numerator$`ID + cond + ID:cond`@prior$rscale$effects,#verstehe die Art wie es gespeichert wird nicht
+  iterationsPrior = iterationsPrior, #wird definiert aber nicht gespeichert, weiß nicht wie ich es ergänzen kann
+  cleanConstraints = resStroop@constraints@cleanConstraints,
+  IDorg = resStroop@generalTestObj@data$ID, #wird in observedEffects gespeichert
+  effectNameOrg = resStroop@generalTestObj@data$cond) #wird in observedEffects gespeichert
+
+
+##trying around
+
+isS4(print)
+showMethods(show)
 # choose number of prior draws
 iterationsPrior <- 2000
 
@@ -38,19 +55,6 @@ print(resStroop@designIndeces$indEffect)   # ist das "cond" oder ein Vektor?
 # Prüfe rscaleEffects und seine Namen
 rsc <- resStroop@generalTestObj@numerator$`ID + cond + ID:cond`@prior$rscale
 str(rsc)
-print(names(rsc)
-
-# call the function (use package namespace if needed)
-prior_pass_vec <- estimatePriorProbability(
-  iTheta = resStroop@designIndeces$effectLevels,
-  rscaleEffects = resStroop@generalTestObj@numerator$`ID + cond + ID:cond`@prior$rscale$fixed,
-  iterationsPrior = iterationsPrior,
-  cleanConstraints = resStroop@constraints@cleanConstraints,
-  IDorg = resStroop@generalTestObj@data$ID,
-  effectNameOrg = resStroop@generalTestObj@data$cond)
-
-plotEffects(resStroop)
-plotEffects(resStroop, .raw = TRUE)
 
 
 data(ld5)
@@ -66,3 +70,4 @@ resLD5 <- constraintBF(formula = rt ~ sub * distance + side, #rt=output, Modell 
                                          "sub:distance" = 1/10)) #setzt spezifische priors für fixed, random und interaction effects
 
 plotEffects(resLD5)
+
