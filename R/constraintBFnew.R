@@ -101,8 +101,8 @@ constraintBF <- function(formula, data, whichRandom, ID,
   ID <- cleanName(ID)
 
   # get constraints
-  constraints <- createConstraints(whichConstraint = whichConstraint)
-  cleanConstraints <- createCleanConstraints(constraints = constraints)
+  constraints <- quid:::createConstraints(whichConstraint = whichConstraint)
+  cleanConstraints <- quid:::createCleanConstraints(constraints = constraints)
 
   # get indeces for posterior
   iTheta <- extractIndeces(constraints = constraints,
@@ -118,7 +118,7 @@ constraintBF <- function(formula, data, whichRandom, ID,
   totalThetas <- addThetas(thetas = thetas, iTheta = iTheta, keep = keep)
 
   # evaluate posterior probability of all thetas being positive
-  constrainedThetas <- estimateConstrainedThetas(totalThetas = totalThetas, cleanConstraints = cleanConstraints)
+  constrainedThetas <- quid:::estimateConstrainedThetas(totalThetas = totalThetas, cleanConstraints = cleanConstraints)
   passThetas <- apply(constrainedThetas, 1, mean) == 1
   posteriorProbability <- mean(passThetas)
 
