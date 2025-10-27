@@ -68,7 +68,7 @@
 #'                           rscaleEffects = c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10))
 #' }
 #'
-constraintBF <- function(formula, data, whichRandom, ID,
+get_iTheta <- function(formula, data, whichRandom, ID,
                         whichConstraint, rscaleEffects,
                         iterationsPosterior = 10000, iterationsPrior = iterationsPosterior * 10,
                         burnin = 1000, ...) {
@@ -122,45 +122,46 @@ constraintBF <- function(formula, data, whichRandom, ID,
   passThetas <- apply(constrainedThetas, 1, mean) == 1
   posteriorProbability <- mean(passThetas)
 
-  # get prior probability of all thetas being positive
-  passPrior <- estimatePriorProbability(iTheta = iTheta,
-                                        rscaleEffects = rscaleEffects,
-                                        iterationsPrior = iterationsPrior,
-                                        cleanConstraints = cleanConstraints,
-                                        IDorg = IDorg,
-                                        effectNameOrg = effectNameOrg)
-
-  priorProbability <- mean(passPrior)
-
-  # prepare return values
-  bfCU <- posteriorProbability / priorProbability
-  individualEffects <- lapply(totalThetas, colMeans)
-  posteriorSD <- sapply(individualEffects, sd)
-  posteriorMean <- colMeans(thetas[keep, iTheta$commonEffect])
-  observedEffects <- calculateObservedEffects(constraints = constraints,
-                                              data = data,
-                                              IDorg = IDorg,
-                                              iTheta = iTheta,
-                                              formula = formula,
-                                              effectNameOrg = effectNameOrg)
-
-  # make S4 objects
-  newConstraint <- BFConstraint(priorProbability = priorProbability,
-                                posteriorProbability = posteriorProbability,
-                                bayesFactor = bfCU,
-                                constraints = constraints,
-                                cleanConstraints = cleanConstraints)
-
-
-  newBFConstraint <- BFBayesFactorConstraint(generalTestObj = generalTestObj,
-                                             constraints = newConstraint,
-                                             individualEffects = individualEffects,
-                                             posteriorMean = posteriorMean,
-                                             posteriorSD = posteriorSD,
-                                             totalThetas = totalThetas,
-                                             mcmcFull = thetas,
-                                             designIndeces = iTheta,
-                                             observedEffects = observedEffects)
-
-  return(newBFConstraint)
+  # # get prior probability of all thetas being positive
+  # passPrior <- estimatePriorProbability(iTheta = iTheta,
+  #                                       rscaleEffects = rscaleEffects,
+  #                                       iterationsPrior = iterationsPrior,
+  #                                       cleanConstraints = cleanConstraints,
+  #                                       IDorg = IDorg,
+  #                                       effectNameOrg = effectNameOrg)
+  #
+  # priorProbability <- mean(passPrior)
+  #
+  # # prepare return values
+  # bfCU <- posteriorProbability / priorProbability
+  # individualEffects <- lapply(totalThetas, colMeans)
+  # posteriorSD <- sapply(individualEffects, sd)
+  # posteriorMean <- colMeans(thetas[keep, iTheta$commonEffect])
+  # observedEffects <- calculateObservedEffects(constraints = constraints,
+  #                                             data = data,
+  #                                             IDorg = IDorg,
+  #                                             iTheta = iTheta,
+  #                                             formula = formula,
+  #                                             effectNameOrg = effectNameOrg)
+  #
+  # # make S4 objects
+  # newConstraint <- BFConstraint(priorProbability = priorProbability,
+  #                               posteriorProbability = posteriorProbability,
+  #                               bayesFactor = bfCU,
+  #                               constraints = constraints,
+  #                               cleanConstraints = cleanConstraints)
+  #
+  #
+  # newBFConstraint <- BFBayesFactorConstraint(generalTestObj = generalTestObj,
+  #                                            constraints = newConstraint,
+  #                                            individualEffects = individualEffects,
+  #                                            posteriorMean = posteriorMean,
+  #                                            posteriorSD = posteriorSD,
+  #                                            totalThetas = totalThetas,
+  #                                            mcmcFull = thetas,
+  #                                            designIndeces = iTheta,
+  #                                            observedEffects = observedEffects)
+  #
+  # return(newBFConstraint)
+  iTheta
 }

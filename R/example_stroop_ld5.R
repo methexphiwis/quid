@@ -4,7 +4,7 @@ install.packages("microbenchmark")
 library(microbenchmark)
 
 data(stroop)
-resStroop <- constraintBF(formula = rtS ~ ID*cond,
+resStroop <- quid::constraintBF(formula = rtS ~ ID*cond,
                           data = stroop,
                           whichRandom = "ID",
                           ID = "ID",
@@ -21,7 +21,7 @@ plotEffects(resStroop, .raw = TRUE)
 
 # call the function (use package namespace if needed)
 prior_pass_vec <- estimatePriorProbability(
-  iTheta = resStroop@designIndeces, #wird da gespeichert, findet funktion estimateConstrainedThetas nicht
+  iTheta = resStroop@designIndeces, #sollte jetzt richtig sein, wird darin gespeichert
   rscaleEffects = resStroop@generalTestObj@numerator$`ID + cond + ID:cond`@prior$rscale$effects,#verstehe die Art wie es gespeichert wird nicht
   iterationsPrior = iterationsPrior, #wird definiert aber nicht gespeichert, weiß nicht wie ich es ergänzen kann
   cleanConstraints = resStroop@constraints@cleanConstraints,
