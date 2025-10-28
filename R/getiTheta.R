@@ -70,42 +70,59 @@
 #'
 get_iTheta <- function(formula, data, whichRandom, ID,
                         whichConstraint, rscaleEffects,
-                        iterationsPosterior = 10000, iterationsPrior = iterationsPosterior * 10,
-                        burnin = 1000, ...) {
+                        iterationsPosterior = 3, iterationsPrior = 1000,
+                        burnin = 1, ...) {
 
   # Assertions
-  data <- forceDataFrame(data)
-  data <- checkUsedLevels(formula = formula, data = data)
-  ellipsis::check_dots_used()
-  checkFormulaData(formula = formula, data = data)
-  checkID(ID = ID, data = data)
-  checkConstraints(whichConstraint = whichConstraint, data = data)
-  checkPriors(rscaleEffects = rscaleEffects, formula = formula, data = data, ID = ID, whichConstraint = whichConstraint)
-  checkIterations(iterationsPosterior = iterationsPosterior, burnin = burnin)
+  # data <- forceDataFrame(data)
+  # data <- checkUsedLevels(formula = formula, data = data)
+  # ellipsis::check_dots_used()
+  # checkFormulaData(formula = formula, data = data)
+  # checkID(ID = ID, data = data)
+  # checkConstraints(whichConstraint = whichConstraint, data = data)
+  # checkPriors(rscaleEffects = rscaleEffects, formula = formula, data = data, ID = ID, whichConstraint = whichConstraint)
+  # checkIterations(iterationsPosterior = iterationsPosterior, burnin = burnin)
 
-  # run all models
-  generalTestObj <- BayesFactor::generalTestBF(formula = formula, data = data,
-                                               whichRandom = whichRandom,
-                                               rscaleEffects = rscaleEffects,
-                                               ...)
+  #run only one nessecary model
+  bf_full <- BayesFactor::lmBF(
+    formula = formula,
+    data = data,
+    whichRandom = whichRandom,
+    rscaleEffects = rscaleEffects,
+    iterations = iterationsPosterior,
+    progress = FALSE
+  )
+
+  # no need to run all models
+  # generalTestObj <- BayesFactor::generalTestBF(formula = formula, data = data,
+  #                                             whichRandom = whichRandom,
+  #                                             rscaleEffects = rscaleEffects,
+  #                                             ...)
 
   # get index of full model
-  indexFullModel <- extractIndexFullModel(generalTestObj)
+  # indexFullModel <- extractIndexFullModel(generalTestObj)
   # sample from full model posterior
-  thetas <- BayesFactor::posterior(generalTestObj, index = indexFullModel, iterations = iterationsPosterior)
+  thetas <- BayesFactor::posterior(bf_full, iterations = iterationsPosterior)
 
   # clean names
-  colnames(thetas) <- cleanName(colnames(thetas))
+  # colnames(thetas) <- cleanName(colnames(thetas))
   IDorg <- ID
   effectNameOrg <- unique(names(whichConstraint))
-  ID <- cleanName(ID)
+  # ID <- cleanName(ID)
 
-  # get constraints
+  # get constraints with quid
   constraints <- quid:::createConstraints(whichConstraint = whichConstraint)
   cleanConstraints <- quid:::createCleanConstraints(constraints = constraints)
 
+  # more simple way
+  # cleanConstraints <- data.frame(
+  #  upper = "cond_2",
+  #  lower = "cond_1",
+  #  stringsAsFactors = FALSE
+  #)
+
   # get indeces for posterior
-  iTheta <- extractIndeces(constraints = constraints,
+  iTheta <- quid:::extractIndeces(constraints = constraints,
                            thetas = thetas,
                            ID = ID,
                            data = data,
@@ -113,14 +130,14 @@ get_iTheta <- function(formula, data, whichRandom, ID,
                            IDorg = IDorg)
 
   # add overall effect to individuals' deviations
-  keep <- (burnin + 1) : iterationsPosterior
+  #keep <- (burnin + 1) : iterationsPosterior
 
-  totalThetas <- addThetas(thetas = thetas, iTheta = iTheta, keep = keep)
+  #otalThetas <- addThetas(thetas = thetas, iTheta = iTheta, keep = keep)
 
   # evaluate posterior probability of all thetas being positive
-  constrainedThetas <- quid:::estimateConstrainedThetas(totalThetas = totalThetas, cleanConstraints = cleanConstraints)
-  passThetas <- apply(constrainedThetas, 1, mean) == 1
-  posteriorProbability <- mean(passThetas)
+  # constrainedThetas <- quid:::estimateConstrainedThetas(totalThetas = totalThetas, cleanConstraints = cleanConstraints)
+  # passThetas <- apply(constrainedThetas, 1, mean) == 1
+  # posteriorProbability <- mean(passThetas)
 
   # # get prior probability of all thetas being positive
   # passPrior <- estimatePriorProbability(iTheta = iTheta,
@@ -163,5 +180,4 @@ get_iTheta <- function(formula, data, whichRandom, ID,
   #                                            observedEffects = observedEffects)
   #
   # return(newBFConstraint)
-  iTheta
 }
