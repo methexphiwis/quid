@@ -2,8 +2,11 @@ crossRegex <- function(IDLevels, effectLevels, ID, effectName, formula) {
 
   trms <- attr(terms(formula), "term.labels")
   trms <- cleanName(trms)
+  print(trms)
   idFirst <- paste0(ID, "_", effectName)
+  print(idFirst)
   effectFirst <- paste0(effectName, "_", ID)
+  print(effectFirst)
 
   if (idFirst %in% trms) {
     suffix <- outer(IDLevels, effectLevels, FUN = paste, sep = "_")
