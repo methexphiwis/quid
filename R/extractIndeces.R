@@ -14,7 +14,7 @@ extractIndeces <- function(constraints, thetas, ID, data, formula, IDorg) {
   names(iTheta0) <- paste0(effectName, "_", effectLevels)
 
   # individual effects
-  regexThetaID <- crossRegex(IDLevels = IDLevels, effectLevels = effectLevels, ID = ID, effectName = effectName, formula = formula)
+  regexThetaID <- quid::crossRegex(IDLevels = IDLevels, effectLevels = effectLevels, ID = ID, effectName = effectName, formula = formula)
   iThetaID <- apply(regexThetaID, MARGIN = c(1, 2), function(pat) grep(pattern = pat, x = colnames(thetas)))
 
   return(list(commonEffect = iTheta0,
