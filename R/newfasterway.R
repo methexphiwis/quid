@@ -4,7 +4,7 @@ install.packages("quid")
 library(quid)
 
 data(stroop)
-#run script with getiTheta function
+#run script with getiTheta, estimatePriorProbability and fixedFromRandomProjection function
 
 
 iTheta <- get_iTheta(formula = rtS ~ ID*cond,
@@ -17,12 +17,12 @@ iTheta <- get_iTheta(formula = rtS ~ ID*cond,
                        iterationsPrior = 1000,
                        burnin = 1)
 
-prior_pass_vec <- quid:::estimatePriorProbability(iTheta = iTheta,
-                                                 rscaleEffects = c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10),
-                                                 iterationsPrior = 1000,
-                                                 cleanConstraints = cleanConstraints,
-                                                 IDorg = "ID",
-                                                 effectNameOrg = "cond")
+prior_pass_vec <- estimatePriorProbability(iTheta = iTheta,
+                                           rscaleEffects = c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10),
+                                           iterationsPrior = 1000,
+                                           cleanConstraints = cleanConstraints,
+                                           IDorg = "ID",
+                                           effectNameOrg = "cond")
 
 #(
  # iTheta = iTheta,
