@@ -1,73 +1,4 @@
 #' Function to compute Bayes factors for ordinal constraints
-#'
-#' This function uses Bayesian mixed models to estimate individual effect
-#' sizes and to test theoretical order constraints.
-#'
-#' This function provides a way of testing whether theoretical constraints on
-#' certain effects hold for all subjects. The backend is provided by the
-#' \code{\link[BayesFactor]{generalTestBF}} function from the
-#' \code{\link[BayesFactor]{BayesFactor-package}}. The input formula is the
-#' full model to be tested. It usually contains an interaction term between
-#' the subject ID and the effect for which constraints are tested (e.g.
-#' \code{ID:condition}). The ID variable is to be specified in \code{ID} and is
-#' usually a random factor to be specified in \code{whichRandom}.
-#'
-#' Order constraints on effects should be specified in \code{whichConstraint},
-#' as a named character vector. Each constraint in the vector can take 2 levels
-#' of the effect. They are of the form:
-#' \code{"effect name" = "condition A" < "condition B"}. In order to impute more
-#' than 2 levels, the same effect name has to be entered with different conditions
-#' as the value. For instance, for testing whether conditions A < B < C, the
-#' input should be: \code{"effect name" = "condition A" < "condition B", "effect name" = "condition B" < "condition C"}.
-#' At this point, constraints can only be tested for the same effect.
-#'
-#' Priors have to be specified for all factors in \code{whichConstraint},
-#' for \code{ID}, and for the interaction between the two. A Detailed description
-#' of the models, priors and methods is given in the documentation of
-#' \code{\link[BayesFactor]{anovaBF}} and more extensively in Rouder et al. (2012).
-#'
-#' @param formula a formula containing the full model.
-#' @param data a \code{data.frame} containing the data with all variables
-#'   defined in the formula.
-#' @param whichRandom a character vector specifying which factors are random.
-#' @param ID a character vector of length one specifying which variable
-#'   holds the subject ID.
-#' @param whichConstraint a named character vector specifying the constraints
-#'   placed on certain factors; see Details.
-#' @param rscaleEffects a named vector of prior settings for individual factors.
-#'   Values are scales, names are factor names; see Details.
-#' @param iterationsPosterior the number of iterations to sample from the
-#'  posterior of the full model.
-#' @param iterationsPrior the number of iterations to sample from the
-#'  prior of the full model.
-#' @param burnin the number of initial iterations to discard from posterior
-#'   sampling.
-#' @param ... further arguments to be passed to
-#'   \code{\link[BayesFactor]{generalTestBF}}.
-#'
-#' @return An object of class \code{\link{BFBayesFactorConstraint-class}}.
-#'
-#' @references Rouder, J. N., Morey, R. D., Speckman, P. L., Province, J. M., (2012)
-##'   Default Bayes Factors for ANOVA Designs. Journal of Mathematical
-##'   Psychology.  56.  p. 356-374.
-#'
-#' @importFrom stats as.formula rcauchy rnorm sd terms
-#' @importFrom rlang .data
-#'
-#' @export
-#'
-#' @examples
-#' \donttest{
-#' data(stroop)
-#'
-#' resStroop <- constraintBF(rtS ~ ID*cond,
-#'                           data = stroop,
-#'                           whichRandom = "ID",
-#'                           ID = "ID",
-#'                           whichConstraint = c(cond = "2 > 1"),
-#'                           rscaleEffects = c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10))
-#' }
-#'
 get_iTheta <- function(formula, data, whichRandom, ID,
                         whichConstraint, rscaleEffects,
                         iterationsPosterior = 3, iterationsPrior = 1000,
@@ -123,10 +54,10 @@ get_iTheta <- function(formula, data, whichRandom, ID,
 
   # get indeces for posterior (start of extractIndeces function)
   effectName <- unique(constraints$constraintEffect)
-  effectName <- cleanName(effectName)
+  #effectName <- cleanName(effectName)
 
   # get all unique values of relevant factors
-  colnames(data) <- cleanName(colnames(data))
+  #colnames(data) <- cleanName(colnames(data))
 
   effectLevels <- as.factor(sort(unique(c(constraints$constraintUpper, constraints$constraintLower))))
   IDLevels <- unique(do.call(`$`, args = list(x = data, name = ID)))
@@ -138,11 +69,11 @@ get_iTheta <- function(formula, data, whichRandom, ID,
 
   # definitions from crossRegex function
   trms <- attr(terms(formula), "term.labels")
-  trms <- cleanName(trms)
+  #trms <- cleanName(trms)
   print(trms)
-  idFirst <- paste0(ID, "_", effectName)
+  idFirst <- paste0(ID, ":", effectName)
   print(idFirst)
-  effectFirst <- paste0(effectName, "_", ID)
+  effectFirst <- paste0(effectName, ":", ID)
   print(effectFirst)
 
   if (idFirst %in% trms) {
@@ -170,55 +101,65 @@ get_iTheta <- function(formula, data, whichRandom, ID,
                  effectLevels = effectLevels,
                  ID = IDorg)
 
-  # add overall effect to individuals' deviations
-  #keep <- (burnin + 1) : iterationsPosterior
+ }
 
-  #otalThetas <- addThetas(thetas = thetas, iTheta = iTheta, keep = keep)
+# quid:::estimatePriorProbability
+estimatePriorProbability <- function(iTheta = iTheta,
+                                     rscaleEffects = rscaleEffects,
+                                     iterationsPrior = iterationsPrior,
+                                     cleanConstraints = cleanConstraints,
+                                     IDorg = IDorg,
+                                     effectNameOrg = effectNameOrg) {
+  # get parameterization
+  nLevels <- length(iTheta[["effectLevels"]]) # num conditions
+  I <- length(iTheta[["IDLevels"]]) # num participants
+  regexEffect <- paste0("^", effectNameOrg, ":", IDorg, "$", "|", "^", IDorg, ":", effectNameOrg, "$") # creats single string containing ID:effectname or effectname:ID
+  indEffect <- grep(regexEffect, names(rscaleEffects)) #vector showing the position of the values in rscalesEffect which perfectly match with values in regexEffect -> used to extract relevant elements of rscaleEffets, e.g. names(rscaleEffects) = c("age:participant1", "gender:participant2", "participant1:age") and regexEffect = "^age:participant1$|^participant1:age$" then indEffect will be c(1, 3)
 
-  # evaluate posterior probability of all thetas being positive
-  # constrainedThetas <- quid:::estimateConstrainedThetas(totalThetas = totalThetas, cleanConstraints = cleanConstraints)
-  # passThetas <- apply(constrainedThetas, 1, mean) == 1
-  # posteriorProbability <- mean(passThetas)
+  # nLevels is projected onto n-1 levels by use of the following projection matrix
+  params <- fixedFromRandomProjection(nLevels, sparse = FALSE) #done to meet statistical constraints
 
-  # # get prior probability of all thetas being positive
-  # passPrior <- estimatePriorProbability(iTheta = iTheta,
-  #                                       rscaleEffects = rscaleEffects,
-  #                                       iterationsPrior = iterationsPrior,
-  #                                       cleanConstraints = cleanConstraints,
-  #                                       IDorg = IDorg,
-  #                                       effectNameOrg = effectNameOrg)
-  #
-  # priorProbability <- mean(passPrior)
-  #
-  # # prepare return values
-  # bfCU <- posteriorProbability / priorProbability
-  # individualEffects <- lapply(totalThetas, colMeans)
-  # posteriorSD <- sapply(individualEffects, sd)
-  # posteriorMean <- colMeans(thetas[keep, iTheta$commonEffect])
-  # observedEffects <- calculateObservedEffects(constraints = constraints,
-  #                                             data = data,
-  #                                             IDorg = IDorg,
-  #                                             iTheta = iTheta,
-  #                                             formula = formula,
-  #                                             effectNameOrg = effectNameOrg)
-  #
-  # # make S4 objects
-  # newConstraint <- BFConstraint(priorProbability = priorProbability,
-  #                               posteriorProbability = posteriorProbability,
-  #                               bayesFactor = bfCU,
-  #                               constraints = constraints,
-  #                               cleanConstraints = cleanConstraints)
-  #
-  #
-  # newBFConstraint <- BFBayesFactorConstraint(generalTestObj = generalTestObj,
-  #                                            constraints = newConstraint,
-  #                                            individualEffects = individualEffects,
-  #                                            posteriorMean = posteriorMean,
-  #                                            posteriorSD = posteriorSD,
-  #                                            totalThetas = totalThetas,
-  #                                            mcmcFull = thetas,
-  #                                            designIndeces = iTheta,
-  #                                            observedEffects = observedEffects)
-  #
-  # return(newBFConstraint)
+  # sample n main effects m times
+  mus <- matrix(nrow = iterationsPrior, ncol = ncol(params)) #creats empty matrix with each row = iteration and each column = parameter from params
+  for(i in 1:ncol(mus)) {
+    mus[, i] <- rcauchy(iterationsPrior, 0, rscaleEffects[effectNameOrg])
+  } #for each column i in mus draw sample (iterationsPrior) from cauchy distribution (location =0, r from effect name) -> use it later to simulate main effects in prior
+
+  # sample SDs for individual effects
+  gID <- MCMCpack::rinvgamma(iterationsPrior, .5, .5 * rscaleEffects[indEffect]) # MCMCpack::rinvgamma(n, shape, scale): number of random samples to draw = iterationsPrios, shape parameter is .5, scale parameter is 0.5*rscaleEffects[indEffects]
+
+  # set up for loop to estimate how often effects are in the expected direction
+  pass <- 1:iterationsPrior #creates vector from 1 to iterationsPrior
+
+  # sample n individual effects m times
+  for (m in 1:iterationsPrior){
+    rEffects <- matrix(nrow = I, ncol = ncol(params)) #matrix with I = ID rows and and as many columns as params has
+
+    for (n in 1:ncol(rEffects)) {
+      rEffects[, n] <- rnorm(I, 0, sqrt(gID[m]))
+    } # Simulate individual-level random effects for this prior sample
+
+    # make empty list of lenght n
+    totalPrior <- vector(mode = "list", length = nLevels)
+    names(totalPrior) <- colnames(iTheta$indEffect)
+
+    # multiply effects with parameterization
+    for (i in seq_along(totalPrior)) { #Iterates over each element of totalPrior, which corresponds to each effect level
+      totalPrior[[i]] <- sum(mus[m, ] * params[i, ]) +
+        rEffects %*% params[i, ]
+    } #total prior = get the total prior effect for each individual at this effect level
+
+    # estimate how often effects are in the expected direction
+    constrainedPrior <- quid:::estimateConstrainedThetas(totalThetas = totalPrior, cleanConstraints = cleanConstraints) # logical vector (e.g., TRUE/FALSE for each individual) indicating whether the simulated effects meet the constraints
+    pass[m] <- sum(constrainedPrior) == I #counts true for each individual
+  }
+  return(pass)
 }
+
+# BayesFactor:::fixedFromRandomProjection
+fixedFromRandomProjection <- function (nlevRandom, sparse = FALSE) {
+  centering = diag(nlevRandom) - (1/nlevRandom)
+  S = as.vector((eigen(centering)$vectors)[, 1:(nlevRandom - 1)])
+  return(Matrix::Matrix(S, nrow = nlevRandom, sparse = sparse))
+}
+
