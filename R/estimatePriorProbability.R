@@ -44,7 +44,7 @@ estimatePriorProbability <- function(iTheta = iTheta,
     } #total prior = get the total prior effect for each individual at this effect level
 
     # estimate how often effects are in the expected direction
-    constrainedPrior <- estimateConstrainedThetas(totalThetas = totalPrior, cleanConstraints = cleanConstraints) # logical vector (e.g., TRUE/FALSE for each individual) indicating whether the simulated effects meet the constraints
+    constrainedPrior <- quid:::estimateConstrainedThetas(totalThetas = totalPrior, cleanConstraints = cleanConstraints) # logical vector (e.g., TRUE/FALSE for each individual) indicating whether the simulated effects meet the constraints
     pass[m] <- sum(constrainedPrior) == I #counts true for each individual
   }
   return(pass)
