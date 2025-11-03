@@ -121,13 +121,54 @@ get_iTheta <- function(formula, data, whichRandom, ID,
   #  stringsAsFactors = FALSE
   #)
 
-  # get indeces for posterior
-  iTheta <- quid:::extractIndeces(constraints = constraints,
-                           thetas = thetas,
-                           ID = ID,
-                           data = data,
-                           formula = formula,
-                           IDorg = IDorg)
+  # get indeces for posterior (start of extractIndeces function)
+  effectName <- unique(constraints$constraintEffect)
+  effectName <- cleanName(effectName)
+
+  # get all unique values of relevant factors
+  colnames(data) <- cleanName(colnames(data))
+
+  effectLevels <- as.factor(sort(unique(c(constraints$constraintUpper, constraints$constraintLower))))
+  IDLevels <- unique(do.call(`$`, args = list(x = data, name = ID)))
+
+  # common effect
+  regexTheta0 <- paste0("^", effectName, "_", effectLevels, "$")
+  iTheta0 <- sapply(regexTheta0, function(pat) grep(pattern = pat, x = colnames(thetas)))
+  names(iTheta0) <- paste0(effectName, "_", effectLevels)
+
+  # definitions from crossRegex function
+  trms <- attr(terms(formula), "term.labels")
+  trms <- cleanName(trms)
+  print(trms)
+  idFirst <- paste0(ID, "_", effectName)
+  print(idFirst)
+  effectFirst <- paste0(effectName, "_", ID)
+  print(effectFirst)
+
+  if (idFirst %in% trms) {
+    suffix <- outer(IDLevels, effectLevels, FUN = paste, sep = "_")
+    regexThetaID <- apply(suffix, MARGIN = c(1, 2), function(x) paste0("^", ID, "_", effectName, "_", x, "$"))
+    regexThetaID <- as.data.frame(regexThetaID)
+    colnames(regexThetaID) <- paste0(effectName, "_", effectLevels)
+  } else if (effectFirst %in% trms) {
+    suffix <- outer(effectLevels, IDLevels, FUN = paste, sep = "_")
+    suffix <- t(suffix)
+    regexThetaID <- apply(suffix, MARGIN = c(1, 2), function(x) paste0("^", effectName, "_", ID, "_", x, "$"))
+    regexThetaID <- as.data.frame(regexThetaID)
+    colnames(regexThetaID) <- paste0(effectName, "_", effectLevels)
+  } else {
+    stop("Unable to match formula elements with column names from posterior samples.")
+  }
+
+  # individual effects
+  iThetaID <- apply(regexThetaID, MARGIN = c(1, 2), function(pat) grep(pattern = pat, x = colnames(thetas)))
+
+  # create iTheta (end of extractIndeces function)
+  iTheta <- list(commonEffect = iTheta0,
+                 indEffect = iThetaID,
+                 IDLevels = IDLevels,
+                 effectLevels = effectLevels,
+                 ID = IDorg)
 
   # add overall effect to individuals' deviations
   #keep <- (burnin + 1) : iterationsPosterior
