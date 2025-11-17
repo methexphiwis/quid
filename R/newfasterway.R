@@ -17,10 +17,13 @@ iTheta <- get_iTheta(formula = rtS ~ ID*cond,
                        iterationsPrior = 1000,
                        burnin = 1)
 
+totalThetas <- addThetas(thetas = iTheta$thetas, iTheta = iTheta, keep =  (1 + 1) : 1000)
+
 prior_pass_vec <- estimatePriorProbability(iTheta = iTheta,
                                            rscaleEffects = c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10),
                                            iterationsPrior = 1000,
-                                           cleanConstraints = cleanConstraints,
+                                           cleanConstraints = iTheta$cleanConstraints,
+                                           totalThetas = iTheta$totalThetas,
                                            IDorg = "ID",
                                            effectNameOrg = "cond")
 
