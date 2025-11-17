@@ -64,7 +64,7 @@ get_iTheta <- function(formula, data, whichRandom, ID,
 
   # common effect
   regexTheta0 <- paste0("^", effectName, "_", effectLevels, "$")
-  iTheta0 <- sapply(regexTheta0, function(pat) grep(pattern = pat, x = colnames(thetas)))
+  iTheta0 <- sapply(regexTheta0, function(pat) grep(pattern = pat, x = colnames(thetas))) #wird nicht richtig gespeichert
   names(iTheta0) <- paste0(effectName, "_", effectLevels)
 
   # definitions from crossRegex function
@@ -94,14 +94,30 @@ get_iTheta <- function(formula, data, whichRandom, ID,
   # individual effects
   iThetaID <- apply(regexThetaID, MARGIN = c(1, 2), function(pat) grep(pattern = pat, x = colnames(thetas)))
 
+
   # create iTheta (end of extractIndeces function)
   iTheta <- list(commonEffect = iTheta0,
                  indEffect = iThetaID,
                  IDLevels = IDLevels,
                  effectLevels = effectLevels,
-                 ID = IDorg)
+                 ID = IDorg,
+                 cleanConstraints = cleanConstraints,
+                 thetas = thetas)
 
  }
+
+# quid::addThetas
+addThetas <- function(thetas = thetas, iTheta = iTheta, keep = keep) {
+
+  totalTheta <- vector(mode = "list", length = length(iTheta$commonEffect))
+  names(totalTheta) <- colnames(iTheta$indEffect)
+
+  for (i in seq_along(totalTheta)) {
+    totalTheta[[i]] <- thetas[keep, iTheta$commonEffect[i]] + thetas[keep, iTheta$indEffect[, i]]
+  }
+
+  return(totalTheta)
+}
 
 # quid:::estimatePriorProbability
 estimatePriorProbability <- function(iTheta = iTheta,
@@ -150,7 +166,14 @@ estimatePriorProbability <- function(iTheta = iTheta,
     } #total prior = get the total prior effect for each individual at this effect level
 
     # estimate how often effects are in the expected direction
-    constrainedPrior <- quid:::estimateConstrainedThetas(totalThetas = totalPrior, cleanConstraints = cleanConstraints) # logical vector (e.g., TRUE/FALSE for each individual) indicating whether the simulated effects meet the constraints
+    X <- vector(mode = "list", length = nrow(cleanConstraints))
+    # build up expression and then evaluate
+    for (i in 1:nrow(cleanConstraints)) {
+      X[[i]] <- rlang::expr(totalThetas[[!!cleanConstraints[i, "upper"]]] > totalThetas[[!!cleanConstraints[i, "lower"]]])
+    }
+    Y <- purrr:::reduce(X, ~ rlang::expr(!!.x & !!.y))
+    constrainedPrior <- eval(Y)
+    # logical vector (e.g., TRUE/FALSE for each individual) indicating whether the simulated effects meet the constraints
     pass[m] <- sum(constrainedPrior) == I #counts true for each individual
   }
   return(pass)
