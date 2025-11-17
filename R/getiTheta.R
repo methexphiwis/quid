@@ -64,7 +64,8 @@ get_iTheta <- function(formula, data, whichRandom, ID,
 
   # common effect
   regexTheta0 <- paste0("^", effectName, "_", effectLevels, "$")
-  iTheta0 <- sapply(regexTheta0, function(pat) grep(pattern = pat, x = colnames(thetas))) #wird nicht richtig gespeichert
+  colnames(thetas) <- gsub("-", "_", dimnames(thetas)[[2]]) #macht aus - ein _
+  iTheta0 <- sapply(regexTheta0, function(pat) grep(pattern = pat, x = colnames(thetas)))
   names(iTheta0) <- paste0(effectName, "_", effectLevels)
 
   # definitions from crossRegex function
