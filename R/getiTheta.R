@@ -36,10 +36,10 @@ get_iTheta <- function(formula, data, whichRandom, ID,
   thetas <- BayesFactor::posterior(bf_full, iterations = iterationsPosterior)
 
   # clean names
-  # colnames(thetas) <- cleanName(colnames(thetas))
+  colnames(thetas) <- cleanName(colnames(thetas))
   IDorg <- ID
   effectNameOrg <- unique(names(whichConstraint))
-  # ID <- cleanName(ID)
+  ID <- cleanName(ID)
 
   # get constraints with quid
   constraints <- quid:::createConstraints(whichConstraint = whichConstraint)
@@ -54,23 +54,23 @@ get_iTheta <- function(formula, data, whichRandom, ID,
 
   # get indeces for posterior (start of extractIndeces function)
   effectName <- unique(constraints$constraintEffect)
-  #effectName <- cleanName(effectName)
+  effectName <- cleanName(effectName)
 
   # get all unique values of relevant factors
-  #colnames(data) <- cleanName(colnames(data))
+  colnames(data) <- cleanName(colnames(data))
 
   effectLevels <- as.factor(sort(unique(c(constraints$constraintUpper, constraints$constraintLower))))
   IDLevels <- unique(do.call(`$`, args = list(x = data, name = ID)))
 
   # common effect
   regexTheta0 <- paste0("^", effectName, "_", effectLevels, "$")
-  colnames(thetas) <- gsub("-", "_", dimnames(thetas)[[2]]) #macht aus - ein _
+  #colnames(thetas) <- gsub("_", ":", dimnames(thetas)[[2]]) #macht aus _ ein _
   iTheta0 <- sapply(regexTheta0, function(pat) grep(pattern = pat, x = colnames(thetas)))
   names(iTheta0) <- paste0(effectName, "_", effectLevels)
 
   # definitions from crossRegex function
   trms <- attr(terms(formula), "term.labels")
-  #trms <- cleanName(trms)
+  trms <- cleanName(trms)
   print(trms)
   idFirst <- paste0(ID, ":", effectName)
   print(idFirst)
