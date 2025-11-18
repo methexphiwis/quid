@@ -4,7 +4,7 @@ install.packages("quid")
 library(quid)
 
 data(stroop)
-#run script with getiTheta, estimatePriorProbability and fixedFromRandomProjection function
+#run script with getiTheta, estimatePriorProbability and fixedFromRandomProjection function, run script utils
 
 
 iTheta <- get_iTheta(formula = rtS ~ ID*cond,
