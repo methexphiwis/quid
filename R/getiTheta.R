@@ -72,9 +72,9 @@ get_iTheta <- function(formula, data, whichRandom, ID,
   trms <- attr(terms(formula), "term.labels")
   trms <- cleanName(trms)
   print(trms)
-  idFirst <- paste0(ID, ":", effectName)
+  idFirst <- paste0(ID, "_", effectName)
   print(idFirst)
-  effectFirst <- paste0(effectName, ":", ID)
+  effectFirst <- paste0(effectName, "_", ID)
   print(effectFirst)
 
   if (idFirst %in% trms) {
@@ -106,6 +106,7 @@ get_iTheta <- function(formula, data, whichRandom, ID,
                  thetas = thetas)
 
  }
+#keep <- (burnin + 1) : iterationsPosterior
 
 # quid::addThetas
 addThetas <- function(thetas = thetas, iTheta = iTheta, keep = keep) {
