@@ -28,6 +28,63 @@ prior_pass_vec <- estimatePriorProbability(iTheta = iTheta,
 
 priorProbability <- mean(prior_pass_vec)
 
+# benchmarks
+install.packages("remotes")
+library(remotes)
+remotes::install_github("joshuaulrich/microbenchmark")
+
+pipeline <- function(x) {
+  iTheta <- get_iTheta(formula = rtS ~ ID*cond,
+                       data = stroop,
+                       whichRandom = "ID",
+                       ID = "ID",
+                       whichConstraint = c("cond" = "2 > 1"),
+                       rscaleEffects= c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10),
+                       iterationsPosterior = 3,
+                       iterationsPrior = 1000,
+                       burnin = 1)
+  totalThetas <- addThetas(thetas = iTheta$thetas, iTheta = iTheta, keep =  2 : 3)
+  prior_pass_vec <- estimatePriorProbability(iTheta = iTheta,
+                                             rscaleEffects = c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10),
+                                             iterationsPrior = 1000,
+                                             cleanConstraints = iTheta$cleanConstraints,
+                                             IDorg = "ID",
+                                             effectNameOrg = "cond")
+  priorProbability <- mean(prior_pass_vec)
+
+}
+
+oldway <- function(x){
+  quid::constraintBF(formula = rtS ~ ID*cond,
+                    data = stroop,
+                    whichRandom = "ID",
+                    ID = "ID",
+                    whichConstraint = c("cond" = "2 > 1"),
+                    rscaleEffects = c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10))
+}
+
+res <- microbenchmark::microbenchmark(oldway(x),
+                                      pipeline(x),
+                                      times = 5,
+                                      unit = "s")
+
+print(res,
+      unit = "s")
+
+## Plot results:
+boxplot(
+  res,
+  unit = "s",
+  log = FALSE,
+  xlab = "functions",
+  horizontal = TRUE,
+  main = "microbenchmark timings"
+)
+## Pretty plot:
+if (requireNamespace("ggplot2")) {
+  ggplot2::autoplot(res)
+}
+
 #(
  # iTheta = iTheta,
   #rscaleEffects = c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10),
