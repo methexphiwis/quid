@@ -20,13 +20,13 @@ plotEffects(resStroop)
 plotEffects(resStroop, .raw = TRUE)
 
 # call the function (use package namespace if needed)
-prior_pass_vec <- estimatePriorProbability(
+prior_pass_vec <- quid:::estimatePriorProbability(
   iTheta = resStroop@designIndeces, #sollte jetzt richtig sein, wird darin gespeichert
   rscaleEffects = resStroop@generalTestObj@numerator$`ID + cond + ID:cond`@prior$rscale$effects,#verstehe die Art wie es gespeichert wird nicht
-  iterationsPrior = iterationsPrior, #wird definiert aber nicht gespeichert, weiß nicht wie ich es ergänzen kann
+  iterationsPrior = 1000, #wird definiert aber nicht gespeichert, weiß nicht wie ich es ergänzen kann
   cleanConstraints = resStroop@constraints@cleanConstraints,
-  IDorg = resStroop@generalTestObj@data$ID, #wird in observedEffects gespeichert
-  effectNameOrg = resStroop@generalTestObj@data$cond) #wird in observedEffects gespeichert
+  IDorg = "ID", #wird in observedEffects gespeichert
+  effectNameOrg = "cond") #wird in observedEffects gespeichert
 
 
 ##trying around
