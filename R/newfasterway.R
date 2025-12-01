@@ -28,7 +28,7 @@ prior_pass_vec <- estimatePriorProbability(iTheta = iTheta,
 
 priorProbability <- mean(prior_pass_vec)
 
-# benchmarks
+# microbenchmarks
 install.packages("remotes")
 library(remotes)
 remotes::install_github("joshuaulrich/microbenchmark")
@@ -80,7 +80,7 @@ boxplot(
   horizontal = TRUE,
   main = "microbenchmark timings"
 )
-## Pretty plot:
+## Pretty plots:
 if (requireNamespace("ggplot2")) {
   ggplot2::autoplot(res) +
   ggplot2::labs(
@@ -89,10 +89,11 @@ if (requireNamespace("ggplot2")) {
     )
 }
 
+##boxplot with ggplot2
 df <- as.data.frame(res)
 df$time <- df$time / 1e9
 
-# expr als Faktor setzen
+### expr als Faktor setzen
 df$expr <- factor(df$expr)
 
 library(ggplot2)
@@ -117,7 +118,7 @@ ggplot(df, aes(x = expr, y = time, fill = expr, color = expr)) +
     axis.ticks = element_line(color = "black")
   )
 
-# Normales Boxplot
+### Normales Boxplot
 ggplot(df, aes(x = expr, y = time, fill = expr, color = expr)) +
   geom_boxplot(
     outlier.shape = 16,
@@ -129,7 +130,7 @@ ggplot(df, aes(x = expr, y = time, fill = expr, color = expr)) +
   geom_errorbar(
     aes(ymin = ..ymin.., ymax = ..ymax..),
     stat = "boxplot",
-    width = 0.2,       # <<< hier die Länge der Caps
+    width = 0.2,
     color = "black"
   ) +
   scale_fill_manual(values = c("lightcoral", "lightgreen")) +
@@ -146,31 +147,3 @@ ggplot(df, aes(x = expr, y = time, fill = expr, color = expr)) +
     axis.line = element_line(color = "black"),
     axis.ticks = element_line(color = "black")
   )
-#(#(res
- # iTheta = iTheta,
-  #rscaleEffects = c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10),
-  #iterationsPrior = 1000,
-  #cleanConstraints = cleanConstraints,
-  #IDorg = stroop$ID,
-  #effectNameOrg = effectNameOrg)
-
-# generalTestObj <- BayesFactor::generalTestBF(formula = rtS ~ ID*cond, data = stroop,
-#                                             whichRandom = NULL,
-#                                             rscaleEffects = c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10),)
-# get index of full model
-# indexFullModel <- quid:::extractIndexFullModel(generalTestObj)
-# sample from full model posterior
-# iterationsPosterior = 10000
-# thetas <- BayesFactor::posterior(generalTestObj, index = indexFullModel, iterations = iterationsPosterior)
-# clean names
-# colnames(thetas) <- cleanName(colnames(thetas))
-# IDorg <- ID
-# effectNameOrg <- unique(names(whichConstraint))
-# ID <- cleanName(ID)
-
-# iTheta <- quid:::extractIndeces(constraints = constraints,
-#                                thetas = thetas,
-#                                ID = thetas@data$ID,
-#                                data = stroop,
-#                                formula = rtS ~ ID*cond,
-#                                IDorg = IDorg)
