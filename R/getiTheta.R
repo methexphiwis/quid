@@ -1,8 +1,8 @@
 #' Function to compute Bayes factors for ordinal constraints
 get_iTheta <- function(formula, data, whichRandom, ID,
                         whichConstraint, rscaleEffects,
-                        iterationsPosterior = 3, iterationsPrior = 1000,
-                        burnin = 1, ...) {
+                        iterationsPosterior = iterationsPosterior, iterationsPrior = iterationsPrior,
+                        burnin = burnin, ...) {
 
   # Assertions
   # data <- forceDataFrame(data)

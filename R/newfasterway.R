@@ -14,14 +14,14 @@ iTheta <- get_iTheta(formula = rtS ~ ID*cond,
                        whichConstraint = c("cond" = "2 > 1"),
                        rscaleEffects= c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10),
                        iterationsPosterior = 3,
-                       iterationsPrior = 1000,
+                       iterationsPrior = 100000,
                        burnin = 1)
 
 totalThetas <- addThetas(thetas = iTheta$thetas, iTheta = iTheta, keep =  2 : 3)
 
 prior_pass_vec <- estimatePriorProbability(iTheta = iTheta,
                                            rscaleEffects = c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10),
-                                           iterationsPrior = 1000,
+                                           iterationsPrior = 100000,
                                            cleanConstraints = iTheta$cleanConstraints,
                                            IDorg = "ID",
                                            effectNameOrg = "cond")
@@ -41,12 +41,12 @@ newWay <- function(x) {
                        whichConstraint = c("cond" = "2 > 1"),
                        rscaleEffects= c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10),
                        iterationsPosterior = 3,
-                       iterationsPrior = 1000,
+                       iterationsPrior = 100000,
                        burnin = 1)
   totalThetas <- addThetas(thetas = iTheta$thetas, iTheta = iTheta, keep =  2 : 3)
   prior_pass_vec <- estimatePriorProbability(iTheta = iTheta,
                                              rscaleEffects = c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10),
-                                             iterationsPrior = 1000,
+                                             iterationsPrior = 100000,
                                              cleanConstraints = iTheta$cleanConstraints,
                                              IDorg = "ID",
                                              effectNameOrg = "cond")
