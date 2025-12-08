@@ -63,13 +63,44 @@ constraintBF_function <- function(x){
                     rscaleEffects = c("ID" = 1, "cond" = 1/6, "ID:cond" = 1/10))
 }
 
-res <- microbenchmark::microbenchmark(constraintBF_function(x),
-                                      newWay(x),
-                                      times = 10,
-                                      unit = "s")
+
+results_newWay <- list()
+results_bf <- list()
+
+# getrennte Counter
+counter_new <- 0
+counter_bf <- 0
+
+
+newWay_wrapper <- function(x) {
+  res <- newWay(x)
+  counter_new <<- counter_new + 1
+  results_newWay[[counter_new]] <<- res
+  res
+}
+
+bf_wrapper <- function(x) {
+  res <- constraintBF_function(x)
+  counter_bf <<- counter_bf + 1
+  results_bf[[counter_bf]] <<- res@constraints@priorProbability
+  res
+}
+
+
+res <- microbenchmark::microbenchmark(
+  newWay_wrapper(x),
+  bf_wrapper(x),
+  times = 10,
+  unit = "s"
+)
 
 print(res,
       unit = "s")
+
+res_PriorProb <- data.frame(
+  newWay = unlist(results_newWay),
+  constraintBF = unlist(results_bf)
+)
 
 ## Plot results:
 boxplot(
